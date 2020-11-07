@@ -2,6 +2,7 @@
 .vs/*
 
 .aws-sam/*
+package.yaml
 
 *.*~
 .DS_Store
