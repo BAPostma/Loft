@@ -27,9 +27,9 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           # AWS Access Key ID. This input is required if running in the GitHub hosted environment. It is optional if running in a self-hosted environment that already has AWS credentials, for example on an EC2 instance.
-          aws-access-key-id: ${{ secrets.AwsAccessKeyId }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           # AWS Secret Access Key. This input is required if running in the GitHub hosted environment. It is optional if running in a self-hosted environment that already has AWS credentials, for example on an EC2 instance.
-          aws-secret-access-key: ${{ secrets.AwsSecretAccessKey }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-1
       
       - name: Validate
@@ -38,11 +38,11 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Deploy stack
         env:
-          LOFT_DOMAIN: ${{ secrets.LoftDomain }}
-          LAMBA_ROLE_ARN: ${{ secrets.LambdaRoleArn }}
-          IMAP_SERVER: ${{ secrets.ImapServer }}
-          IMAP_USERNAME: ${{ secrets.ImapUsername }}
-          IMAP_PASSWORD: ${{ secrets.ImapPassword }}
+          LOFT_DOMAIN: ${{ secrets.LOFT_DOMAIN }}
+          LAMBA_ROLE_ARN: ${{ secrets.LAMBDA_ROLE_ARN }}
+          IMAP_SERVER: ${{ secrets.IMAP_SERVER }}
+          IMAP_USERNAME: ${{ secrets.IMAP_USERNAME }}
+          IMAP_PASSWORD: ${{ secrets.IMAP_PASSWORD }}
         run: |
           sam deploy \
             --stack-name loft \
