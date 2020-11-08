@@ -1,0 +1,209 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: An AWS Serverless app that stores and syncs incoming SES mail to an IMAP mailbox
+Parameters:
+  LoftDomain:
+    Type: String
+  LambdaRoleARN:
+    Type: String
+  IMAPServer:
+    Type: String
+  IMAPUsername:
+    Type: String
+  IMAPPassword:
+    Type: String
+  
+  IMAPDestinationFolder:
+    Type: String
+    Default: "INBOX"
+  IMAPMarkAsRead: 
+    Type: Boolean
+    Default: false
+  IMAPDebugLogging:
+    Type: Boolean
+    Default: false
+  
+Metadata:
+  AWS::ServerlessRepo::Application:
+    Name: Loft
+    Description: Lambda that stores and syncs incoming SES mail to an IMAP mailbox
+    Author: Barry Postma - Cyrix Solutions
+    SemanticVersion: 1.0.0
+    ReadmeUrl: ./README.md
+    HomePageUrl: https://github.com/BAPostma/Loft
+    SourceCodeUrl: https://github.com/BAPostma/Loft
+
+Resources:
+  EmailStorage:
+    Type: AWS::S3::Bucket
+    Properties: 
+      BucketName: !Join ['-', ['loft', !Ref LoftDomain]]
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+      AccessControl: Private
+
+  EmailStoragePermissions:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref EmailStorage
+      PolicyDocument:
+        Statement:
+          - Action:
+              - 's3:PutObject'
+            Effect: Allow
+            Resource: !Join ['', ['arn:aws:s3:::', !Ref EmailStorage, '/*']]
+            Principal:
+              Service: 
+                - 'ses.amazonaws.com'
+            Condition:
+              StringLike:
+                'aws:Referer':
+                  - !Ref AWS::AccountId
+    DependsOn: EmailStorage
+
+  EmailNotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Join ['-', ['sns', Fn::Join: ['_', Fn::Split: ['.', !Ref LoftDomain]], 'inbox']]
+      Subscription:
+        - Protocol: sqs
+          Endpoint: !GetAtt EmailNotificationQueue.Arn
+    DependsOn:
+      - EmailNotificationQueue
+
+  EmailNotificationQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Join ['-', ['sqs', Fn::Join: ['_', Fn::Split: ['.', !Ref LoftDomain]], 'inbox']]
+      MessageRetentionPeriod: 1209600
+      RedrivePolicy: 
+        deadLetterTargetArn: !GetAtt EmailNotificationDeadLetterQueue.Arn
+        maxReceiveCount: 3
+      VisibilityTimeout: 60
+    DependsOn: EmailNotificationDeadLetterQueue
+
+  EmailNotificationDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Join ['-', ['sqs', Fn::Join: ['_', Fn::Split: ['.', !Ref LoftDomain]], 'dlq']]
+      MessageRetentionPeriod: 1209600
+
+  EmailNotificationQueuePermissions:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref EmailNotificationQueue
+      PolicyDocument:
+        Statement:
+          - Action:
+              - 'SQS:SendMessage'
+            Effect: Allow
+            Resource: !GetAtt EmailNotificationQueue.Arn
+            Principal:
+              AWS: '*'
+            Condition:
+              ArnLike:
+                'aws:SourceArn':
+                  - !Ref EmailNotificationTopic
+    DependsOn: EmailNotificationQueue
+
+  EmailReceiver:
+    Type: AWS::SES::ReceiptRuleSet
+    Properties:
+      RuleSetName: !Join ['-', ['loft', !Ref LoftDomain, 'rule-set']]
+
+  EmailReceiverCatchAllRule:
+    Type: AWS::SES::ReceiptRule
+    Properties:
+      RuleSetName: !Join ['-', ['loft', !Ref LoftDomain, 'rule-set']]
+      Rule:
+        Name: !Join ['-', [!Ref LoftDomain, 'catch-all']]
+        Enabled: true
+        ScanEnabled: true
+        Recipients:
+          - !Ref LoftDomain
+        Actions:
+          - S3Action:
+              BucketName: !Ref EmailStorage
+              ObjectKeyPrefix: 'inbox/'
+              TopicArn: !Ref EmailNotificationTopic
+          - StopAction:
+              Scope: RuleSet
+    DependsOn: 
+      - EmailReceiver
+      - EmailStorage
+      - EmailStoragePermissions
+      - EmailNotificationTopic
+
+  EmailHandler:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: Loft.Function::Loft.Function.LambdaFunction::FunctionHandler
+      Runtime: dotnetcore3.1
+      CodeUri: ./src/Loft.Function
+      Description: 'Stores and syncs incoming SES mail to an IMAP mailbox'
+      MemorySize: 128
+      Timeout: 60
+      Role:
+        Ref: LambdaRoleARN
+      DeadLetterQueue: 
+        TargetArn: !GetAtt EmailNotificationDeadLetterQueue.Arn
+        Type: SQS
+      Events:
+        SQSTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt EmailNotificationQueue.Arn
+      Environment:
+        Variables:
+          DynamoDbTableName: !Ref EmailTable
+          IMAPServer: !Ref IMAPServer
+          IMAPUsername: !Ref IMAPUsername
+          IMAPPassword: !Ref IMAPPassword
+          IMAPDestinationFolder: !Ref IMAPDestinationFolder
+          IMAPMarkAsRead: !Ref IMAPMarkAsRead
+          IMAPDebugLogging: !Ref IMAPDebugLogging
+    DependsOn:
+      - EmailTable
+      - EmailNotificationQueue
+      - EmailNotificationDeadLetterQueue
+  
+  EmailTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: !Join ['-', ['loft', Fn::Join: ['_', Fn::Split: ['.', !Ref LoftDomain]]]]
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: S
+        - AttributeName: source
+          AttributeType: S
+        - AttributeName: destination
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: source-address-index
+          KeySchema:
+            - AttributeName: source
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: destination-address-index
+          KeySchema:
+            - AttributeName: destination
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
