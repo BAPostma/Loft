@@ -23,9 +23,6 @@ jobs:
       - name: Build
         run: sam build
 
-      - name: Validate
-        run: sam validate
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -35,6 +32,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AwsSecretAccessKey }}
           aws-region: eu-west-1
       
+      - name: Validate
+        run: sam validate
+
       # Runs a set of commands using the runners shell
       - name: Deploy stack
         env:
