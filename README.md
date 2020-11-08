@@ -1,6 +1,8 @@
 # Loft
 Receive email via Amazon Simple Email Service (SES) and synchronise it to a designated IMAP mailbox. Adequate logging, persistence in S3 and Dynamo DB is part of the handler's process.
 
+![CI](https://github.com/BAPostma/Loft/workflows/CI/badge.svg?branch=master)
+
 ## Purpose
 Many email providers like Gmail allow for the addition of a '+' in an email address to create specialised address aliases (e.g. johndoe+contoso@example.com). This is a useful approach to limit exposure of your email address as well as to track a possible data leak, should that alias suddenly receive spam or appear on blacklists.
 
