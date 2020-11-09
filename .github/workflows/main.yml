@@ -39,7 +39,7 @@ jobs:
       - name: Deploy stack
         env:
           LOFT_DOMAIN: ${{ secrets.LOFT_DOMAIN }}
-          LAMBA_ROLE_ARN: ${{ secrets.LAMBDA_ROLE_ARN }}
+          LAMBDA_ROLE_ARN: ${{ secrets.LAMBDA_ROLE_ARN }}
           IMAP_SERVER: ${{ secrets.IMAP_SERVER }}
           IMAP_USERNAME: ${{ secrets.IMAP_USERNAME }}
           IMAP_PASSWORD: ${{ secrets.IMAP_PASSWORD }}
