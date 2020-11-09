@@ -10,17 +10,25 @@ Parameters:
     Type: String
   IMAPUsername:
     Type: String
+    NoEcho: true
   IMAPPassword:
     Type: String
+    NoEcho: true
   
   IMAPDestinationFolder:
     Type: String
     Default: "INBOX"
   IMAPMarkAsRead: 
-    Type: Boolean
+    Type: String
+    AllowedValues:
+      - 'true'
+      - 'false'
     Default: false
   IMAPDebugLogging:
-    Type: Boolean
+    Type: String
+    AllowedValues:
+      - 'true'
+      - 'false'
     Default: false
   
 Metadata:
