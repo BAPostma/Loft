@@ -45,7 +45,7 @@ jobs:
           IMAP_PASSWORD: ${{ secrets.IMAP_PASSWORD }}
         run: |
           sam deploy \
-            --stack-name loft \
+            --stack-name "loft-$LOFT_DOMAIN" \
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
             --parameter-overrides "\
