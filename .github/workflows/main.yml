@@ -7,6 +7,8 @@ name: CI
 on:
   push:
     branches: [ master ]
+  workflow_dispatch:
+    
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -44,10 +46,8 @@ jobs:
           IMAP_USERNAME: ${{ secrets.IMAP_USERNAME }}
           IMAP_PASSWORD: ${{ secrets.IMAP_PASSWORD }}
         run: |
-          # Generate stack name from domain name, then SAM deploy
-          export STACK_NAME=loft-$(echo $LOFT_DOMAIN | sed -e 's/\./_/g')
           sam deploy \
-            --stack-name "::add-mask::$STACK_NAME" \
+            --stack-name loft \
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
             --parameter-overrides "\
