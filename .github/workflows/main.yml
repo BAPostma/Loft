@@ -44,9 +44,10 @@ jobs:
           IMAP_USERNAME: ${{ secrets.IMAP_USERNAME }}
           IMAP_PASSWORD: ${{ secrets.IMAP_PASSWORD }}
         run: |
-          export STACK_NAME=loft-::add-mask::$(echo $LOFT_DOMAIN | sed -e 's/\./_/g')
+          # Generate stack name from domain name, then SAM deploy
+          export STACK_NAME=loft-$(echo $LOFT_DOMAIN | sed -e 's/\./_/g')
           sam deploy \
-            --stack-name $STACK_NAME \
+            --stack-name "::add-mask::$STACK_NAME" \
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
             --parameter-overrides "\
