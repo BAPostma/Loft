@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.SimpleEmailEvents.Actions;
@@ -79,12 +80,13 @@ namespace Loft.Function.Handlers
 
         private void SetMetadata(CopyObjectRequest request, SimpleEmailMessage mail)
         {
+            var subjectCleaned = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(mail.CommonHeaders.Subject));
             request.ContentType = EmailMessageMimeType;
 
             request.MetadataDirective = S3MetadataDirective.REPLACE;
             request.Metadata.Add("MessageId", mail.MessageId);
             request.Metadata.Add("From", mail.Source);
-            request.Metadata.Add("Subject", mail.CommonHeaders.Subject);
+            request.Metadata.Add("Subject", subjectCleaned);
             request.Metadata.Add("Received", mail.Timestamp.ToUniversalTime().ToString("s"));
         }
 
