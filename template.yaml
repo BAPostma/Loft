@@ -80,9 +80,6 @@ Resources:
     Type: AWS::SNS::Topic
     Properties:
       TopicName: !Join ['-', ['sns', Fn::Join: ['_', Fn::Split: ['.', !Ref LoftDomain]], 'inbox']]
-      Subscription:
-        - Protocol: sqs
-          Endpoint: !GetAtt EmailNotificationQueue.Arn
     DependsOn:
       - EmailNotificationQueue
 
@@ -96,6 +93,17 @@ Resources:
         maxReceiveCount: 3
       VisibilityTimeout: 60
     DependsOn: EmailNotificationDeadLetterQueue
+
+  EmailNotificationQueueTopicSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: sqs
+      TopicArn: !GetAtt EmailNotificationTopic.Arn
+      Endpoint: !GetAtt EmailNotificationQueue.Arn
+      RawMessageDelivery: true
+    DependsOn:
+      - EmailNotificationTopic
+      - EmailNotificationQueue
 
   EmailNotificationDeadLetterQueue:
     Type: AWS::SQS::Queue
