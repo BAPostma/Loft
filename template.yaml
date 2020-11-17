@@ -98,7 +98,7 @@ Resources:
     Type: AWS::SNS::Subscription
     Properties:
       Protocol: sqs
-      TopicArn: !GetAtt EmailNotificationTopic.Arn
+      TopicArn: !Ref EmailNotificationTopic
       Endpoint: !GetAtt EmailNotificationQueue.Arn
       RawMessageDelivery: true
     DependsOn:
