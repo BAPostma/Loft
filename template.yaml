@@ -157,6 +157,37 @@ Resources:
       - EmailStorage
       - EmailStoragePermissions
       - EmailNotificationTopic
+  
+  EmailHandlerExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Join ['', ['Custom.AWS.Lambda.Loft-', !Ref LoftDomain]]
+      Description: 
+      ManagedPolicyArns:
+       - arn:aws:iam::aws:policy/AWSLambdaFullAccess
+      AssumeRolePolicyDocument: 
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: !Join ['', ['Custom.AWS.SQS.ReceiveMessage-', !Ref LoftDomain]]
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueUrl
+                  - sqs:ListDeadLetterSourceQueues
+                  - sqs:ReceiveMessage
+                  - sqs:GetQueueAttributes
+                  - sqs:ListQueueTag
+                Resource: "*"
 
   EmailHandler:
     Type: 'AWS::Serverless::Function'
@@ -168,7 +199,7 @@ Resources:
       MemorySize: 128
       Timeout: 60
       Role:
-        Ref: LambdaRoleARN
+        GetAtt: EmailHandlerExecutionRole
       DeadLetterQueue: 
         TargetArn: !GetAtt EmailNotificationDeadLetterQueue.Arn
         Type: SQS
@@ -187,6 +218,7 @@ Resources:
           IMAPMarkAsRead: !Ref IMAPMarkAsRead
           IMAPDebugLogging: !Ref IMAPDebugLogging
     DependsOn:
+      - EmailHandlerExecutionRole
       - EmailTable
       - EmailNotificationQueue
       - EmailNotificationDeadLetterQueue
