@@ -4,8 +4,6 @@ Description: An AWS Serverless app that stores and syncs incoming SES mail to an
 Parameters:
   LoftDomain:
     Type: String
-  LambdaRoleARN:
-    Type: String
   IMAPServer:
     Type: String
   IMAPUsername:
@@ -198,8 +196,7 @@ Resources:
       Description: 'Stores and syncs incoming SES mail to an IMAP mailbox'
       MemorySize: 128
       Timeout: 60
-      Role:
-        GetAtt: EmailHandlerExecutionRole
+      Role: !GetAtt EmailHandlerExecutionRole.Arn
       DeadLetterQueue: 
         TargetArn: !GetAtt EmailNotificationDeadLetterQueue.Arn
         Type: SQS

@@ -27,7 +27,6 @@ You need to configure secrets to match the [Cloudformation parameters](./templat
 
 Required:
 - `LoftDomain` (e.g. `example.com`)
-- `LambdaRoleARN`
 - `IMAPServer` (requires SSL/TLS)
 - `IMAPUsername`
 - `IMAPPassword`

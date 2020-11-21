@@ -41,7 +41,6 @@ jobs:
       - name: Deploy stack
         env:
           LOFT_DOMAIN: ${{ secrets.LOFT_DOMAIN }}
-          LAMBDA_ROLE_ARN: ${{ secrets.LAMBDA_ROLE_ARN }}
           IMAP_SERVER: ${{ secrets.IMAP_SERVER }}
           IMAP_USERNAME: ${{ secrets.IMAP_USERNAME }}
           IMAP_PASSWORD: ${{ secrets.IMAP_PASSWORD }}
@@ -52,7 +51,6 @@ jobs:
             --no-fail-on-empty-changeset \
             --parameter-overrides "\
                 ParameterKey=LoftDomain,ParameterValue="$LOFT_DOMAIN" \
-                ParameterKey=LambdaRoleARN,ParameterValue="$LAMBDA_ROLE_ARN" \
                 ParameterKey=IMAPServer,ParameterValue=$IMAP_SERVER \
                 ParameterKey=IMAPUsername,ParameterValue=$IMAP_USERNAME \
                 ParameterKey=IMAPPassword,ParameterValue=$IMAP_PASSWORD \
