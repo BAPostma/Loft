@@ -184,7 +184,7 @@ Resources:
                   - sqs:ListDeadLetterSourceQueues
                   - sqs:ReceiveMessage
                   - sqs:GetQueueAttributes
-                  - sqs:ListQueueTag
+                  - sqs:ListQueueTags
                 Resource: "*"
 
   EmailHandler:
