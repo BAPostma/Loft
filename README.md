@@ -18,26 +18,26 @@ This project is named after the construction that houses homing pigeons: a Loft.
 ## Prerequisites
 - Domain name with control over MX records in DNS
 - Configured Amazon Simple Email Service to receive email on the domain
-- Mailbox that supports IMAP for synchronising email
-  - IMAP credentials for the destination mail server
+- Mailbox that supports IMAP for synchronising email (e.g. [Gmail](https://support.google.com/mail/answer/7126229?hl=en-GB))
+  - IMAP credentials for the destination mail server (e.g. [Gmail app passwords](https://support.google.com/mail/answer/185833?hl=en-GB))
+- AWS IAM access credentials with appropriate permissions to deploy using CloudFormation
 
 # Setup
-The simplest means of installation is to fork this repository and run the GitHub action to build & install.  
-You need to configure secrets to match the [Cloudformation parameters](./template.yaml) and [AWS Credentials](https://github.com/aws-actions/configure-aws-credentials#usage).  
+The simplest means of installation is to **fork** this repository, then follow these steps:
+Configure Github secrets for each of the [Cloudformation parameters](./template.yaml) per the table below, and for the deployment's [AWS Credentials](https://github.com/aws-actions/configure-aws-credentials#usage).
 
-Required:
-- `LoftDomain` (e.g. `example.com`)
-- `IMAPServer` (requires SSL/TLS)
-- `IMAPUsername`
-- `IMAPPassword`
-
-Optional:
-- `IMAPDestinationFolder`
-- `IMAPMarkAsRead`
-- `IMAPDebugLogging`
+| Lambda env var/SAM parameter | GitHub actions secret | Required | Comment |
+| ---------------------------- | --------------------- | -------- | ------- |
+| `LoftDomain` | `LOFT_DOMAIN` | yes | e.g. `example.com` |
+| `IMAPServer` | `IMAP_SERVER` | yes | requires SSL/TLS |
+| `IMAPUsername` | `IMAP_USERNAME` | yes | |
+| `IMAPPassword` | `IMAP_PASSWORD` | yes | |
+| `IMAPDestinationFolder` | n/a | no | default: `INBOX` |
+| `IMAPMarkAsRead` | n/a | no | default: `false` |
+| `IMAPDebugLogging` | n/a | no | default: `false` |
 
 ## Deployment
-This script uses AWS CloudFormation to deploy the Lambda functions and an IAM role. If the AWS CloudFormation stack that contains the resources already exists, the script updates it with any changes to the template or function code.
+This script uses AWS CloudFormation to deploy the Lambda function. If the AWS CloudFormation stack that contains the resources already exists, the script updates it with any changes to the template or function code.
 
 Run the [GitHub action](./.github/workflows/main.yml) to trigger the deployment into your AWS account.
 
