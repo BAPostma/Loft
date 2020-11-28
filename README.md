@@ -34,6 +34,7 @@ Configure Github secrets for each of the [Cloudformation parameters](./template.
 | `LoftDomain` | `LOFT_DOMAIN` | yes | e.g. `example.com` |
 | n/a | `AWS_ACCESS_KEY_ID` | yes | Deployment user |
 | n/a | `AWS_SECRET_ACCESS_KEY` | yes | Deployment user |
+| `IMAPServer` | `IMAP_SERVER` | yes | requires SSL/TLS |
 | `IMAPUsername` | `IMAP_USERNAME` | yes | |
 | `IMAPPassword` | `IMAP_PASSWORD` | yes | |
 | `IMAPDestinationFolder` | n/a | no | default: `INBOX` |
