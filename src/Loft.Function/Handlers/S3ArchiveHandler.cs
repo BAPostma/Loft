@@ -80,7 +80,7 @@ namespace Loft.Function.Handlers
 
         private void SetMetadata(CopyObjectRequest request, SimpleEmailMessage mail)
         {
-            var subjectCleaned = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(mail.CommonHeaders.Subject));
+            var subjectCleaned = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(mail.CommonHeaders?.Subject ?? string.Empty));
             request.ContentType = EmailMessageMimeType;
 
             request.MetadataDirective = S3MetadataDirective.REPLACE;
