@@ -1,4 +1,4 @@
-# Loft
+# Loft 🕊
 Receive email via Amazon Simple Email Service (SES) and synchronise it to a designated IMAP mailbox. Adequate logging, persistence in S3 and Dynamo DB is part of the handler's process.
 
 ![CI](https://github.com/BAPostma/Loft/workflows/CI/badge.svg?branch=master)
@@ -13,14 +13,16 @@ This project is named after the construction that houses homing pigeons: a Loft.
 
 # Architecture
 ![Architecture](./doc/architecture.png)
-**The following AWS services are used:** CloudFormation, SES, SNS, SQS, S3, CloudWatch, Dynamo DB, Lambda.
+**The following AWS services are used:** CloudFormation, SES, SNS, SQS, S3, CloudWatch, Dynamo DB, Lambda and IAM.
 
 ## Prerequisites
 - Domain name with control over MX records in DNS
-- Configured Amazon Simple Email Service to receive email on the domain
+- Configured Amazon Simple Email Service to receive email on the domain ([guide](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email-setting-up.html))
+- S3 bucket for the build artifacts (Loft will be deployed from this bucket)
 - Mailbox that supports IMAP for synchronising email (e.g. [Gmail](https://support.google.com/mail/answer/7126229?hl=en-GB))
-  - IMAP credentials for the destination mail server (e.g. [Gmail app passwords](https://support.google.com/mail/answer/185833?hl=en-GB))
-- AWS IAM access credentials with appropriate permissions to deploy using CloudFormation
+  - IMAP credentials for the destination mail server (e.g. [Gmail app password](https://support.google.com/mail/answer/185833?hl=en-GB) is recommended to avoid using your main password)
+- AWS IAM access credentials with appropriate permissions to deploy using CloudFormation.  
+  An account with programmatic access and AWS built-in _full-access_ policies for abovementioned services is recommended.
 
 # Setup
 The simplest means of installation is to **fork** this repository, then follow these steps:
@@ -29,12 +31,15 @@ Configure Github secrets for each of the [Cloudformation parameters](./template.
 | Lambda env var/SAM parameter | GitHub actions secret | Required | Comment |
 | ---------------------------- | --------------------- | -------- | ------- |
 | `LoftDomain` | `LOFT_DOMAIN` | yes | e.g. `example.com` |
-| `IMAPServer` | `IMAP_SERVER` | yes | requires SSL/TLS |
+| n/a | `AWS_ACCESS_KEY_ID` | yes | Deployment user |
+| n/a | `AWS_SECRET_ACCESS_KEY` | yes | Deployment user |
 | `IMAPUsername` | `IMAP_USERNAME` | yes | |
 | `IMAPPassword` | `IMAP_PASSWORD` | yes | |
 | `IMAPDestinationFolder` | n/a | no | default: `INBOX` |
 | `IMAPMarkAsRead` | n/a | no | default: `false` |
 | `IMAPDebugLogging` | n/a | no | default: `false` |
+
+**Note:** the default AWS region is Ireland (`eu-west-1`). You can change this in [`samconfig.toml`](./samconfig.toml).
 
 ## Deployment
 This script uses AWS CloudFormation to deploy the Lambda function. If the AWS CloudFormation stack that contains the resources already exists, the script updates it with any changes to the template or function code.
