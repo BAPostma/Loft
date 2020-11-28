@@ -3,7 +3,6 @@ version = 0.1
 [default.deploy]
 [default.deploy.parameters]
 stack_name = "loft"
-s3_bucket = "aws-lambda-sam-artifacts"
 s3_prefix = "loft"
 region = "eu-west-1"
 confirm_changeset = true

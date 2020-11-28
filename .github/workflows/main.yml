@@ -40,6 +40,7 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Deploy stack
         env:
+          ARTIFACT_BUCKET_NAME: ${{ secrets.ARTIFACT_BUCKET_NAME }}
           LOFT_DOMAIN: ${{ secrets.LOFT_DOMAIN }}
           IMAP_SERVER: ${{ secrets.IMAP_SERVER }}
           IMAP_USERNAME: ${{ secrets.IMAP_USERNAME }}
@@ -49,6 +50,7 @@ jobs:
             --stack-name loft \
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
+            --s3-bucket $ARTIFACT_BUCKET_NAME \
             --parameter-overrides "\
                 ParameterKey=LoftDomain,ParameterValue="$LOFT_DOMAIN" \
                 ParameterKey=IMAPServer,ParameterValue=$IMAP_SERVER \

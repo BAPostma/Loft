@@ -30,6 +30,7 @@ Configure Github secrets for each of the [Cloudformation parameters](./template.
 
 | Lambda env var/SAM parameter | GitHub actions secret | Required | Comment |
 | ---------------------------- | --------------------- | -------- | ------- |
+| n/a | `ARTIFACT_BUCKET_NAME` | yes | e.g. `aws-sam-artifacts` |
 | `LoftDomain` | `LOFT_DOMAIN` | yes | e.g. `example.com` |
 | n/a | `AWS_ACCESS_KEY_ID` | yes | Deployment user |
 | n/a | `AWS_SECRET_ACCESS_KEY` | yes | Deployment user |
