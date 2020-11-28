@@ -4,9 +4,7 @@ Receive email via Amazon Simple Email Service (SES) and synchronise it to a desi
 ![CI](https://github.com/BAPostma/Loft/workflows/CI/badge.svg?branch=master)
 
 ## Purpose
-Many email providers like Gmail allow for the addition of a '+' in an email address to create specialised address aliases (e.g. johndoe+contoso@example.com). This is a useful approach to limit exposure of your email address as well as to track a possible data leak, should that alias suddenly receive spam or appear on blacklists.
-
-If you're not using a provider that supports this and you prefer an entire catch-all domain to support your anonymity, Loft will solve this problem using AWS services. With a few emails per day, the solution is practically $0 on your AWS bill, too!
+For anyone who wants to keep their email address anonymous, Loft is a catch-all email receiver based on AWS. Loft moves email sent to any '[alias]@[mydomain].com'  to an IMAP mailbox such as Gmail. Unlike email providers who allow for the addition of a '+' in email addresses to create aliases (e.g. johndoe+contoso@example.com), Loft works with any registered alias, for any domain name you register. Thereby solving the problem that email addresses often contain (parts of) a real name. What's more is that with a few dozen emails per day, the solution is practically $0 on your AWS bill too!
 
 ### Name
 This project is named after the construction that houses homing pigeons: a Loft. Each pigeonhole is essentially a separate mailbox.
