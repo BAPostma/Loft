@@ -57,3 +57,9 @@ jobs:
                 ParameterKey=IMAPUsername,ParameterValue=$IMAP_USERNAME \
                 ParameterKey=IMAPPassword,ParameterValue=$IMAP_PASSWORD \
             "
+
+      - name: Package app for SAR
+        run: ./scripts/3-package.sh
+
+      - name: Publish app to SAR
+        run: ./scripts/5-publish.sh
