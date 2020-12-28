@@ -4,8 +4,10 @@ Description: An AWS Serverless app that stores and syncs incoming SES mail to an
 Parameters:
   LoftDomain:
     Type: String
+    Description: Domain name on which to receive email in SES (e.g. 'example.com')
   IMAPServer:
     Type: String
+    Description: Host name of an IMAP server to which Loft will connect and synchronise messages
   IMAPUsername:
     Type: String
     NoEcho: true
@@ -16,14 +18,17 @@ Parameters:
   IMAPDestinationFolder:
     Type: String
     Default: "INBOX"
+    Description: Only change this if you know what you're doing. Default is 'INBOX'
   IMAPMarkAsRead: 
     Type: String
+    Description: Set to 'true' to avoid unread messages once they are stored in the mailbox
     AllowedValues:
       - 'true'
       - 'false'
     Default: false
   IMAPDebugLogging:
     Type: String
+    Description: Set to 'true' to write diagnostic information about the IMAP connection to CloudWatch logs
     AllowedValues:
       - 'true'
       - 'false'
@@ -32,10 +37,21 @@ Parameters:
 Metadata:
   AWS::ServerlessRepo::Application:
     Name: Loft
-    Description: Lambda that stores and syncs incoming SES mail to an IMAP mailbox
+    Description: |
+      Receive email via Amazon Simple Email Service (SES) 
+      on a wildcard domain (<anything>@yourdomain.com) 
+      and synchronise it to a designated IMAP mailbox.
+    Labels: 
+      - mail
+      - email
+      - imap
+      - lambda
+      - ses
     Author: Barry Postma - Cyrix Solutions
-    SemanticVersion: 1.0.0
+    SemanticVersion: 1.1.0
     ReadmeUrl: ./README.md
+    SpdxLicenseId: MIT
+    LicenseUrl: ./LICENSE
     HomePageUrl: https://github.com/BAPostma/Loft
     SourceCodeUrl: https://github.com/BAPostma/Loft
 
