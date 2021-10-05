@@ -9,6 +9,8 @@ namespace Loft.Function.MailKitHelpers
     {
         private readonly Action<string> _log;
 
+        public IAuthenticationSecretDetector AuthenticationSecretDetector { get; set; }
+
         public LambdaProtocolLogger(Action<string> logger) => _log = logger;
 
         public void Dispose() { }
