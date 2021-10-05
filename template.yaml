@@ -47,7 +47,7 @@ Metadata:
       - imap
       - lambda
       - ses
-    Author: Barry Postma - Cyrix Solutions
+    Author: Barry Postma
     SemanticVersion: 1.1.0
     ReadmeUrl: ./README.md
     SpdxLicenseId: MIT
