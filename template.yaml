@@ -48,7 +48,7 @@ Metadata:
       - lambda
       - ses
     Author: Barry Postma
-    SemanticVersion: 1.1.0
+    SemanticVersion: 1.2.0
     ReadmeUrl: ./README.md
     SpdxLicenseId: MIT
     LicenseUrl: ./LICENSE
