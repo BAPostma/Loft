@@ -178,7 +178,7 @@ Resources:
       RoleName: !Join ['', ['Custom.AWS.Lambda.Loft-', !Ref LoftDomain]]
       Description: Loft email handler lambda execution role
       ManagedPolicyArns:
-       - arn:aws:iam::aws:policy/AWSLambdaFullAccess
+       - arn:aws:iam::aws:policy/AWSLambda_FullAccess
       AssumeRolePolicyDocument: 
         Version: 2012-10-17
         Statement:
