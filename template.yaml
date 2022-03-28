@@ -179,6 +179,9 @@ Resources:
       Description: Loft email handler lambda execution role
       ManagedPolicyArns:
        - arn:aws:iam::aws:policy/AWSLambda_FullAccess
+       - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+       - arn:aws:iam::aws:policy/AmazonS3FullAccess
+       - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       AssumeRolePolicyDocument: 
         Version: 2012-10-17
         Statement:
