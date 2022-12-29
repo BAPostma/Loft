@@ -210,7 +210,7 @@ Resources:
     Type: 'AWS::Serverless::Function'
     Properties:
       Handler: Loft.Function::Loft.Function.LambdaFunction::FunctionHandler
-      Runtime: dotnetcore3.1
+      Runtime: dotnet6
       CodeUri: ./src/Loft.Function
       Description: 'Stores and syncs incoming SES mail to an IMAP mailbox'
       MemorySize: 128
