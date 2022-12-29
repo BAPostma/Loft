@@ -124,6 +124,17 @@ Resources:
     Properties:
       QueueName: !Join ['-', ['sqs', Fn::Join: ['_', Fn::Split: ['.', !Ref LoftDomain]], 'dlq']]
       MessageRetentionPeriod: 1209600
+  
+  CommandsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Join ['-', ['sqs', Fn::Join: ['_', Fn::Split: ['.', !Ref LoftDomain]], 'commands']]
+      MessageRetentionPeriod: 1209600
+      RedrivePolicy: 
+        deadLetterTargetArn: !GetAtt EmailNotificationDeadLetterQueue.Arn
+        maxReceiveCount: 3
+      VisibilityTimeout: 60
+    DependsOn: EmailNotificationDeadLetterQueue
 
   EmailNotificationQueuePermissions:
     Type: AWS::SQS::QueuePolicy
@@ -237,6 +248,30 @@ Resources:
       - EmailHandlerExecutionRole
       - EmailTable
       - EmailNotificationQueue
+      - EmailNotificationDeadLetterQueue
+
+  MaintenanceHandler:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: Loft.Function::Loft.Function.MaintenanceFunction::Handler
+      Runtime: dotnet6
+      CodeUri: ./src/Loft.Function
+      Description: 'Executes commands as they are submitted into a special queue'
+      MemorySize: 256
+      Timeout: 180
+      Role: !GetAtt EmailHandlerExecutionRole.Arn
+      Events:
+        SQSTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt CommandsQueue.Arn
+      Environment:
+        Variables:
+          DynamoDbTableName: !Ref EmailTable
+    DependsOn:
+      - EmailHandlerExecutionRole
+      - EmailTable
+      - CommandsQueue
       - EmailNotificationDeadLetterQueue
   
   EmailTable:
