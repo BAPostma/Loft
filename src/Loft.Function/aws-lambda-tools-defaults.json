@@ -11,7 +11,7 @@
   "profile":"default",
   "region" : "eu-west-1",
   "configuration" : "Release",
-  "framework" : "dotnet6",
+  "framework" : "net6.0",
   "function-runtime":"dotnet6",
   "function-memory-size" : 128,
   "function-timeout" : 60,
