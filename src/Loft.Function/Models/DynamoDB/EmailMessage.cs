@@ -14,7 +14,7 @@ namespace Loft.Function.Models.DynamoDB
         [DynamoDBHashKey]
         public string Id { get; set; }
         [DynamoDBRangeKey]
-        public DateTime Timestamp { get; set; }
+        public DateTime? Timestamp { get; set; }
 
         [DynamoDBGlobalSecondaryIndexHashKey]
         public string Source { get; set; }
@@ -37,22 +37,25 @@ namespace Loft.Function.Models.DynamoDB
 
         public EmailMessage(SimpleEmailService<S3ReceiptAction> message)
         {
+            if(message == null || message.Mail == null)
+                throw new ArgumentNullException(nameof(message), "Mail data is missing from SES event");
+
             Id = message.Mail.MessageId;
-            Timestamp = message.Mail.Timestamp;
+            Timestamp = message.Mail.Timestamp == DateTime.MinValue ? (DateTime?)null : message.Mail.Timestamp;
             Source = message.Mail.Source;
-            SourceName = message.Mail.CommonHeaders.From.FirstOrDefault();
-            Destination = message.Mail.Destination.FirstOrDefault();
-            DestinationName = message.Mail.CommonHeaders.To.FirstOrDefault();
-            Subject = message.Mail.CommonHeaders.Subject;
-            Sent = message.Mail.CommonHeaders.Date;
-            ReturnPath = message.Mail.CommonHeaders.ReturnPath;
-            MessageId = message.Mail.CommonHeaders.MessageId;
+            SourceName = message.Mail.CommonHeaders?.From?.FirstOrDefault();
+            Destination = message.Mail.Destination?.FirstOrDefault();
+            DestinationName = message.Mail.CommonHeaders?.To?.FirstOrDefault();
+            Subject = message.Mail.CommonHeaders?.Subject;
+            Sent = message.Mail.CommonHeaders?.Date;
+            ReturnPath = message.Mail.CommonHeaders?.ReturnPath;
+            MessageId = message.Mail.CommonHeaders?.MessageId;
             
             Headers = message.Mail.Headers;
             
             SecurityAnalysis = SecurityAnalysis.CreateFrom(message.Receipt);
             
-            Metadata = message.Receipt.Action;
+            Metadata = message.Receipt?.Action;
 
             Raw = JsonConvert.SerializeObject(message);
         }

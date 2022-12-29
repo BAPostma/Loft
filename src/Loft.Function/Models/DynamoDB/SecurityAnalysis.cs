@@ -12,12 +12,16 @@ namespace Loft.Function.Models.DynamoDB
 
         public SecurityAnalysis() { }
 
-        public static SecurityAnalysis CreateFrom(SimpleEmailReceipt<S3ReceiptAction> receipt) => new SecurityAnalysis
-        {
-            DKIM = receipt.DKIMVerdict.Status,
-            SPF = receipt.SPFVerdict.Status,
-            Spam = receipt.SpamVerdict.Status,
-            Virus = receipt.VirusVerdict.Status
-        };
+        public static SecurityAnalysis CreateFrom(SimpleEmailReceipt<S3ReceiptAction> receipt) {
+            if(receipt == null) return new SecurityAnalysis();
+            
+            return new SecurityAnalysis
+            {
+                DKIM = receipt.DKIMVerdict?.Status,
+                SPF = receipt.SPFVerdict?.Status,
+                Spam = receipt.SpamVerdict?.Status,
+                Virus = receipt.VirusVerdict?.Status
+            };
+        }
     }
 }
