@@ -20,7 +20,7 @@ namespace Loft.Function.Handlers
         public override async Task Handle(SimpleEmailService<S3ReceiptAction> message, ILambdaContext context)
         {
             var bucket = message.Receipt.Action.BucketName;
-            var mailbox = GetDestinationMailbox(message.Mail) ?? message.Receipt.Recipients.FirstOrDefault(); // Todo: tidy up
+            var mailbox = GetDestinationMailbox(message.Mail) ?? message.Receipt.Recipients.FirstOrDefault().ToLowerInvariant(); // Todo: tidy up
 
             var objectName = $"{message.Mail.MessageId}.{EmailMessageExtension}"; // add extension
             var originalKey = message.Receipt.Action.ObjectKey;
@@ -93,7 +93,7 @@ namespace Loft.Function.Handlers
         private string GetDestinationMailbox(SimpleEmailMessage mail)
         {
             var destination = mail.Destination.FirstOrDefault();
-            if (destination != null) return destination;
+            if (destination != null) return destination.ToLowerInvariant();
             
             var toHeader = mail.Headers.FirstOrDefault(h => h.Name == ToHeaderName);
             if (toHeader != null)
@@ -101,7 +101,7 @@ namespace Loft.Function.Handlers
                 destination = toHeader.Value;
             }
 
-            return destination;
+            return destination.ToLowerInvariant();
         }
     }
 }
