@@ -1,9 +1,9 @@
+using System;
 using System.Net;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.Lambda.Core;
-using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Loft.Function.Models;
@@ -66,29 +66,32 @@ namespace Loft.Function.Maintenance
                 DestinationKey = norm.Item2
             };
 
+            (bool copy, bool delete) result = default;
             // COPY
-            var copyResult = await _s3client.CopyObjectAsync(copyRequest);
-            if(copyResult.HttpStatusCode != HttpStatusCode.OK)
+            try
             {
-                LambdaLogger.Log($"Failed to copy {copyRequest.SourceKey} to {copyRequest.DestinationKey} in bucket {bucketName}");
-            }
-            else
-            {
+                var copyResult = await _s3client.CopyObjectAsync(copyRequest);
                 LambdaLogger.Log($"Copied {copyRequest.SourceKey} to {copyRequest.DestinationKey} in bucket {bucketName}");
+                result.copy = copyResult.HttpStatusCode == HttpStatusCode.OK;
+            }
+            catch(Exception ex)
+            {
+                LambdaLogger.Log($"Failed to copy {copyRequest.SourceKey} to {copyRequest.DestinationKey} in bucket {bucketName}: {ex.Message}");
             }
 
             // DELETE
-            var deleteResult = await _s3client.DeleteObjectAsync(bucketName, orig.Item2);
-            if(deleteResult.HttpStatusCode !=  HttpStatusCode.NoContent)
+            try
             {
-                LambdaLogger.Log($"Failed to delete {copyRequest.SourceKey} in bucket {bucketName} after copying it to {copyRequest.DestinationKey}");
-            }
-            else
-            {
+                var deleteResult = await _s3client.DeleteObjectAsync(bucketName, orig.Item2);
                 LambdaLogger.Log($"Deleted {copyRequest.SourceKey} from bucket {bucketName}");
+                result.delete = deleteResult.HttpStatusCode == HttpStatusCode.NoContent;
+            }
+            catch(Exception ex)
+            {
+                LambdaLogger.Log($"Failed to delete {copyRequest.SourceKey} in bucket {bucketName} after copying it to {copyRequest.DestinationKey}: {ex.Message}");
             }
 
-            return (copyResult.HttpStatusCode == HttpStatusCode.OK, deleteResult.HttpStatusCode == HttpStatusCode.OK);
+            return result;
         }
 
         private static async Task RenameItemInDynamo(Document record, string norm, (string, string) normLoc)
