@@ -133,7 +133,7 @@ Resources:
       RedrivePolicy: 
         deadLetterTargetArn: !GetAtt EmailNotificationDeadLetterQueue.Arn
         maxReceiveCount: 3
-      VisibilityTimeout: 60
+      VisibilityTimeout: 180
     DependsOn: EmailNotificationDeadLetterQueue
 
   EmailNotificationQueuePermissions:
