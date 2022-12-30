@@ -49,15 +49,15 @@ namespace Loft.Function.Maintenance
                 var origLoc = (metadata["ObjectKeyPrefix"].AsString(), metadata["ObjectKey"].AsString());
                 var normLoc = (origLoc.Item1.ToLowerInvariant(), origLoc.Item2.ToLowerInvariant());
 
-                var moveResult = await RenameItemInS3Bucket(metadata["BucketName"].AsString(), origLoc, normLoc);
-                if(!moveResult) continue;
+                var (copyResult, _) = await RenameItemInS3Bucket(metadata["BucketName"].AsString(), origLoc, normLoc);
+                if(!copyResult) continue;
 
                 await RenameItemInDynamo(email, norm, normLoc);
                 LambdaLogger.Log($"Item {id} to {destination} updated");
             }
         }
 
-        private static async Task<bool> RenameItemInS3Bucket(string bucketName, (string, string) orig, (string, string) norm)
+        private static async Task<(bool copy, bool delete)> RenameItemInS3Bucket(string bucketName, (string, string) orig, (string, string) norm)
         {
             var copyRequest = new CopyObjectRequest {
                 SourceBucket = bucketName,
@@ -67,24 +67,28 @@ namespace Loft.Function.Maintenance
             };
 
             // COPY
-            AmazonWebServiceResponse result = await _s3client.CopyObjectAsync(copyRequest);
-            if(result.HttpStatusCode != HttpStatusCode.OK)
+            var copyResult = await _s3client.CopyObjectAsync(copyRequest);
+            if(copyResult.HttpStatusCode != HttpStatusCode.OK)
             {
-                LambdaLogger.Log($"Failed to move {copyRequest.SourceKey} to {copyRequest.DestinationKey} in bucket {bucketName}");
-                return false;
+                LambdaLogger.Log($"Failed to copy {copyRequest.SourceKey} to {copyRequest.DestinationKey} in bucket {bucketName}");
             }
-            LambdaLogger.Log($"Copied {copyRequest.SourceKey} to {copyRequest.DestinationKey} in bucket {bucketName}");
+            else
+            {
+                LambdaLogger.Log($"Copied {copyRequest.SourceKey} to {copyRequest.DestinationKey} in bucket {bucketName}");
+            }
 
             // DELETE
-            result = await _s3client.DeleteObjectAsync(bucketName, orig.Item2);
-            if(result.HttpStatusCode !=  HttpStatusCode.OK)
+            var deleteResult = await _s3client.DeleteObjectAsync(bucketName, orig.Item2);
+            if(deleteResult.HttpStatusCode !=  HttpStatusCode.NoContent)
             {
                 LambdaLogger.Log($"Failed to delete {copyRequest.SourceKey} in bucket {bucketName} after copying it to {copyRequest.DestinationKey}");
-                return false;
             }
-            LambdaLogger.Log($"Deleted {copyRequest.SourceKey} from bucket {bucketName}");
+            else
+            {
+                LambdaLogger.Log($"Deleted {copyRequest.SourceKey} from bucket {bucketName}");
+            }
 
-            return true;
+            return (copyResult.HttpStatusCode == HttpStatusCode.OK, deleteResult.HttpStatusCode == HttpStatusCode.OK);
         }
 
         private static async Task RenameItemInDynamo(Document record, string norm, (string, string) normLoc)
