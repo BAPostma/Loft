@@ -6,13 +6,13 @@ using Amazon.Lambda.Core;
 using Amazon.Lambda.SimpleEmailEvents.Actions;
 using Amazon.S3;
 using Amazon.S3.Model;
+using Loft.Function.Models;
 using static Amazon.Lambda.SimpleEmailEvents.SimpleEmailEvent<Amazon.Lambda.SimpleEmailEvents.Actions.S3ReceiptAction>;
 
 namespace Loft.Function.Handlers
 {
     public class S3ArchiveHandler : HandlerBase
     {
-        private const string ToHeaderName = "To";
         private const string EmailMessageExtension = "eml";
         private const string EmailMessageMimeType = "message/rfc822";
         private readonly AmazonS3Client _s3client = new AmazonS3Client();
@@ -92,15 +92,8 @@ namespace Loft.Function.Handlers
 
         private string GetDestinationMailbox(SimpleEmailMessage mail)
         {
-            var destination = mail.Destination.FirstOrDefault();
-            if (destination != null) return destination.ToLowerInvariant();
-            
-            var toHeader = mail.Headers.FirstOrDefault(h => h.Name == ToHeaderName);
-            if (toHeader != null)
-            {
-                destination = toHeader.Value;
-            }
-
+            var domain = Configuration.LoftDomain;
+            var destination = mail.Destination.FirstOrDefault(d => d.Contains(domain, System.StringComparison.InvariantCultureIgnoreCase));
             return destination.ToLowerInvariant();
         }
     }
