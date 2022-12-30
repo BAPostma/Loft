@@ -49,8 +49,8 @@ namespace Loft.Function.Maintenance
                 var origLoc = (metadata["ObjectKeyPrefix"].AsString(), metadata["ObjectKey"].AsString());
                 var normLoc = (origLoc.Item1.ToLowerInvariant(), origLoc.Item2.ToLowerInvariant());
 
-                var (copyResult, _) = await RenameItemInS3Bucket(metadata["BucketName"].AsString(), origLoc, normLoc);
-                if(!copyResult) continue;
+                var (copyResult, deleteResult) = await RenameItemInS3Bucket(metadata["BucketName"].AsString(), origLoc, normLoc);
+                if(!copyResult && !deleteResult) continue;
 
                 await RenameItemInDynamo(email, norm, normLoc);
                 LambdaLogger.Log($"Item {id} to {destination} updated");
@@ -100,6 +100,7 @@ namespace Loft.Function.Maintenance
             record["metadata"].AsDocument()["ObjectKeyPrefix"] = normLoc.Item1;
             record["metadata"].AsDocument()["ObjectKey"] = normLoc.Item2;
             
+            LambdaLogger.Log($"Updating Dynamo record {record["id"]} to be normalised");
             await _dynamoTable.UpdateItemAsync(record);
         }
     }
