@@ -26,7 +26,7 @@ namespace Loft.Function.Models.DynamoDB
         public string Sent { get; set; }
         public string ReturnPath { get; set; }
         public string MessageId { get; set; }
-        public IList<SimpleEmailHeader> Headers { get; set; }
+        public IList<SES.SimpleEmailHeader> Headers { get; set; }
         public SecurityAnalysis SecurityAnalysis { get; set; }
         public S3ReceiptAction Metadata { get; set; }
 
@@ -51,7 +51,7 @@ namespace Loft.Function.Models.DynamoDB
             ReturnPath = message.Mail.CommonHeaders?.ReturnPath;
             MessageId = message.Mail.CommonHeaders?.MessageId;
             
-            Headers = message.Mail.Headers;
+            Headers = message.Mail.Headers?.Select(h => new SES.SimpleEmailHeader(h.Name, h.Value)).ToList();
             
             SecurityAnalysis = SecurityAnalysis.CreateFrom(message.Receipt);
             
