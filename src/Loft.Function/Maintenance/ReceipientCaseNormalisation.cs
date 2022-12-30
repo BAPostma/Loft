@@ -1,29 +1,28 @@
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
-using Amazon.DynamoDBv2.DataModel;
+using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.Lambda.Core;
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Loft.Function.Models;
-using Loft.Function.Models.DynamoDB;
 
 namespace Loft.Function.Maintenance
 {
     public static class ReceipientCaseNormalisation
     {
         private static readonly IAmazonDynamoDB _dynamoClient;
-        private static readonly IDynamoDBContext _context;
+        private static readonly Table _dynamoTable;
         private static readonly AmazonS3Client _s3client;
 
         public static string TableName { get; } = Configuration.DynamoDbTableName;
         
         static ReceipientCaseNormalisation()
         {
+            // Using Document Interface because deserialisation fails (https://github.com/aws/aws-sdk-net/issues/1930)
             _dynamoClient = new AmazonDynamoDBClient();
-            _context = new DynamoDBContext(_dynamoClient);
+            _dynamoTable = Table.LoadTable(_dynamoClient, TableName);
             _s3client = new AmazonS3Client();
         }
 
@@ -33,25 +32,28 @@ namespace Loft.Function.Maintenance
         /// </example>
         public static async Task NormaliseReceipientCase()
         {
-            var result = _context.ScanAsync<EmailMessage>(Enumerable.Empty<ScanCondition>(), new DynamoDBOperationConfig { OverrideTableName = TableName });
+            var result = _dynamoTable.Scan(new ScanOperationConfig());
             var records = await result.GetRemainingAsync();
-            foreach (var email in records)
+            foreach (Document email in records)
             {
-                if(email.Destination == email.Destination.ToLowerInvariant()) continue;
+                var id = email["Id"].AsString();
+                var destination = email["Destination"].AsString();
+                if(destination == destination.ToLowerInvariant()) continue;
 
-                LambdaLogger.Log($"Normalising message {email.Id} to {email.Destination}");
+                LambdaLogger.Log($"Normalising message {id} to {destination}");
 
-                var orig = email.Destination; // UPPERCASE@domain.com
+                var orig = destination; // UPPERCASE@domain.com
                 var norm = orig.ToLowerInvariant(); // uppercase@domain.com
 
-                var origLoc = (email.Metadata.ObjectKeyPrefix, email.Metadata.ObjectKey);
-                var normLoc = (origLoc.ObjectKeyPrefix.ToLowerInvariant(), origLoc.ObjectKey.ToLowerInvariant());
+                var metadata = email["Metadata"].AsDocument();
+                var origLoc = (metadata["ObjectKeyPrefix"].AsString(), metadata["ObjectKey"].AsString());
+                var normLoc = (origLoc.Item1.ToLowerInvariant(), origLoc.Item2.ToLowerInvariant());
 
-                var moveResult = await RenameItemInS3Bucket(email.Metadata.BucketName, origLoc, normLoc);
+                var moveResult = await RenameItemInS3Bucket(metadata["BucketName"].AsString(), origLoc, normLoc);
                 if(!moveResult) continue;
 
-                await RenameItemInDynamo(email, norm);
-                LambdaLogger.Log($"Item {email.Id} to {email.Destination} updated");
+                await RenameItemInDynamo(email, norm, normLoc);
+                LambdaLogger.Log($"Item {id} to {destination} updated");
             }
         }
 
@@ -85,13 +87,13 @@ namespace Loft.Function.Maintenance
             return true;
         }
 
-        private static async Task RenameItemInDynamo(EmailMessage record, string norm)
+        private static async Task RenameItemInDynamo(Document record, string norm, (string, string) normLoc)
         {
-            record.Destination = record.Destination?.ToLowerInvariant();
-            record.Metadata.ObjectKey = record.Metadata.ObjectKey.ToLowerInvariant();
-            record.Metadata.ObjectKeyPrefix = record.Metadata.ObjectKeyPrefix.ToLowerInvariant();
+            record["Destination"] = norm;
+            record["Metadata"].AsDocument()["ObjectKeyPrefix"] = normLoc.Item1;
+            record["Metadata"].AsDocument()["ObjectKey"] = normLoc.Item2;
             
-            await _context.SaveAsync(record);
+            await _dynamoTable.UpdateItemAsync(record);
         }
     }
 }
