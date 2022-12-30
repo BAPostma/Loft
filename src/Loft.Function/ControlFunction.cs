@@ -5,8 +5,8 @@ using Loft.Function.Maintenance;
 
 namespace Loft.Function
 {
-    public static class MaintenanceFunction {
-        public static async Task Handler(SQSEvent sqsEvent, ILambdaContext context)
+    public static class ControlFunction {
+        public static async Task CommandHandler(SQSEvent sqsEvent, ILambdaContext context)
         {
             if (sqsEvent == null)
             {

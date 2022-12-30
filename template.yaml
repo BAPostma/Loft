@@ -250,10 +250,10 @@ Resources:
       - EmailNotificationQueue
       - EmailNotificationDeadLetterQueue
 
-  MaintenanceHandler:
+  CommandsHandler:
     Type: 'AWS::Serverless::Function'
     Properties:
-      Handler: Loft.Function::Loft.Function.MaintenanceFunction::Handler
+      Handler: Loft.Function::Loft.Function.ControlFunction::CommandHandler
       Runtime: dotnet6
       CodeUri: ./src/Loft.Function
       Description: 'Executes commands as they are submitted into a special queue'
