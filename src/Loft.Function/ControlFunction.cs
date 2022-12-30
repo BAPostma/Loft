@@ -17,6 +17,8 @@ namespace Loft.Function
             foreach (var record in sqsEvent.Records)
             {
                 if(string.IsNullOrWhiteSpace(record.Body)) continue;
+                
+                LambdaLogger.Log($"Control function called with command {record.Body}");
 
                 switch (record.Body)
                 {
@@ -25,10 +27,12 @@ namespace Loft.Function
                         break;
 
                     default:
-                        LambdaLogger.Log($"Maintenance command {record.Body} not understood, cancelling execution");
+                        LambdaLogger.Log($"Control command {record.Body} not understood, cancelling execution");
                         break;
                 }
             }
+
+            LambdaLogger.Log("All commands finished processing");
         }
     }
 }
