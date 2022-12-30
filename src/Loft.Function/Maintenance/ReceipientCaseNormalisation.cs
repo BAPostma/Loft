@@ -36,8 +36,8 @@ namespace Loft.Function.Maintenance
             var records = await result.GetRemainingAsync();
             foreach (Document email in records)
             {
-                var id = email["Id"].AsString();
-                var destination = email["Destination"].AsString();
+                var id = email["id"].AsString();
+                var destination = email["destination"].AsString();
                 if(destination == destination.ToLowerInvariant()) continue;
 
                 LambdaLogger.Log($"Normalising message {id} to {destination}");
@@ -45,7 +45,7 @@ namespace Loft.Function.Maintenance
                 var orig = destination; // UPPERCASE@domain.com
                 var norm = orig.ToLowerInvariant(); // uppercase@domain.com
 
-                var metadata = email["Metadata"].AsDocument();
+                var metadata = email["metadata"].AsDocument();
                 var origLoc = (metadata["ObjectKeyPrefix"].AsString(), metadata["ObjectKey"].AsString());
                 var normLoc = (origLoc.Item1.ToLowerInvariant(), origLoc.Item2.ToLowerInvariant());
 
@@ -89,9 +89,9 @@ namespace Loft.Function.Maintenance
 
         private static async Task RenameItemInDynamo(Document record, string norm, (string, string) normLoc)
         {
-            record["Destination"] = norm;
-            record["Metadata"].AsDocument()["ObjectKeyPrefix"] = normLoc.Item1;
-            record["Metadata"].AsDocument()["ObjectKey"] = normLoc.Item2;
+            record["destination"] = norm;
+            record["metadata"].AsDocument()["ObjectKeyPrefix"] = normLoc.Item1;
+            record["metadata"].AsDocument()["ObjectKey"] = normLoc.Item2;
             
             await _dynamoTable.UpdateItemAsync(record);
         }
