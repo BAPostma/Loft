@@ -33,7 +33,7 @@ namespace Loft.Function.Maintenance
         /// </example>
         public static async Task NormaliseReceipientCase()
         {
-            var result = _context.ScanAsync<EmailMessage>(Enumerable.Empty<ScanCondition>(), new DynamoDBOperationConfig { OverrideTableName = TableName });
+            var result = _context.ScanAsync<dynamic>(Enumerable.Empty<ScanCondition>(), new DynamoDBOperationConfig { OverrideTableName = TableName });
             var records = await result.GetRemainingAsync();
             foreach (var email in records)
             {
@@ -44,8 +44,8 @@ namespace Loft.Function.Maintenance
                 var orig = email.Destination; // UPPERCASE@domain.com
                 var norm = orig.ToLowerInvariant(); // uppercase@domain.com
 
-                var origLoc = (email.Metadata.ObjectKeyPrefix, email.Metadata.ObjectKey);
-                var normLoc = (origLoc.ObjectKeyPrefix.ToLowerInvariant(), origLoc.ObjectKey.ToLowerInvariant());
+                var origLoc = ((string)email.Metadata.ObjectKeyPrefix, (string)email.Metadata.ObjectKey);
+                var normLoc = (origLoc.Item1.ToLowerInvariant(), origLoc.Item2.ToLowerInvariant());
 
                 var moveResult = await RenameItemInS3Bucket(email.Metadata.BucketName, origLoc, normLoc);
                 if(!moveResult) continue;
