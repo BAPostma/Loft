@@ -35,7 +35,7 @@ namespace Loft.Function.Models.DynamoDB
 
         public EmailMessage() { }
 
-        public EmailMessage(SimpleEmailService<S3ReceiptAction> message)
+        public EmailMessage(string domain, SimpleEmailService<S3ReceiptAction> message)
         {
             if(message == null || message.Mail == null)
                 throw new ArgumentNullException(nameof(message), "Mail data is missing from SES event");
@@ -44,8 +44,8 @@ namespace Loft.Function.Models.DynamoDB
             Timestamp = message.Mail.Timestamp == DateTime.MinValue ? (DateTime?)null : message.Mail.Timestamp;
             Source = message.Mail.Source;
             SourceName = message.Mail.CommonHeaders?.From?.FirstOrDefault();
-            Destination = message.Mail.Destination?.FirstOrDefault();
-            DestinationName = message.Mail.CommonHeaders?.To?.FirstOrDefault();
+            Destination = message.Mail.Destination?.FirstOrDefault(d => d.Contains(domain, StringComparison.InvariantCultureIgnoreCase));
+            DestinationName = message.Mail.CommonHeaders?.To?.FirstOrDefault(d => d.Contains(domain, StringComparison.InvariantCultureIgnoreCase));
             Subject = message.Mail.CommonHeaders?.Subject;
             Sent = message.Mail.CommonHeaders?.Date;
             ReturnPath = message.Mail.CommonHeaders?.ReturnPath;

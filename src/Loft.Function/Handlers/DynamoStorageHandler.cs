@@ -29,7 +29,7 @@ namespace Loft.Function.Handlers
 
         public override async Task Handle(SimpleEmailService<S3ReceiptAction> message, ILambdaContext context)
         {
-            var document = new EmailMessage(message);
+            var document = new EmailMessage(Configuration.LoftDomain, message);
             await _context.SaveAsync(document, new DynamoDBOperationConfig { OverrideTableName = TableName });
 
             Log($"Message stored in DynamoDB under key {document.Id}");

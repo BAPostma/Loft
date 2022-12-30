@@ -237,6 +237,7 @@ Resources:
             Queue: !GetAtt EmailNotificationQueue.Arn
       Environment:
         Variables:
+          LoftDomain: !Ref LoftDomain
           DynamoDbTableName: !Ref EmailTable
           IMAPServer: !Ref IMAPServer
           IMAPUsername: !Ref IMAPUsername

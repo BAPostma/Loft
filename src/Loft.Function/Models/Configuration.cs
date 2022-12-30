@@ -4,6 +4,10 @@ namespace Loft.Function.Models
 {
     public static class Configuration
     {
+        public static string LoftDomain {
+            get => Environment.GetEnvironmentVariable(nameof(LoftDomain));
+        }
+
         public static string DynamoDbTableName {
             get => Environment.GetEnvironmentVariable(nameof(DynamoDbTableName));
         }
