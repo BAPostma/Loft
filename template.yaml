@@ -48,7 +48,7 @@ Metadata:
       - lambda
       - ses
     Author: Barry Postma
-    SemanticVersion: 1.3.1
+    SemanticVersion: 1.4.0
     ReadmeUrl: ./README.md
     SpdxLicenseId: MIT
     LicenseUrl: ./LICENSE
@@ -222,7 +222,7 @@ Resources:
     Type: 'AWS::Serverless::Function'
     Properties:
       Handler: Loft.Function::Loft.Function.LambdaFunction::FunctionHandler
-      Runtime: dotnet6
+      Runtime: dotnet8
       CodeUri: ./src/Loft.Function
       Description: 'Stores and syncs incoming SES mail to an IMAP mailbox'
       MemorySize: 128
@@ -256,7 +256,7 @@ Resources:
     Type: 'AWS::Serverless::Function'
     Properties:
       Handler: Loft.Function::Loft.Function.ControlFunction::CommandHandler
-      Runtime: dotnet6
+      Runtime: dotnet8
       CodeUri: ./src/Loft.Function
       Description: 'Executes commands as they are submitted into a special queue'
       MemorySize: 256
