@@ -1,7 +1,7 @@
 # Loft 🕊
 Receive email via Amazon Simple Email Service (SES) and synchronise it to a designated IMAP mailbox. Adequate logging, persistence in S3 and Dynamo DB is part of the handler's process.
 
-[![CI](https://github.com/BAPostma/Loft/workflows/CI/badge.svg?branch=master)](https://github.com/BAPostma/Loft/actions?query=workflow%3ACI)
+[![CI](https://github.com/BAPostma/Loft/actions/workflows/main.yml/badge.svg)](https://github.com/BAPostma/Loft/actions/workflows/main.yml)
 [![AWS SAR](https://img.shields.io/badge/Serverless%20Application%20Repository-Deploy%20Loft%20%E2%96%B6-orange?style=flat&logo=amazon-aws)](https://serverlessrepo.aws.amazon.com/applications/eu-west-1/386916026209/Loft)
 
 ## Purpose
@@ -11,7 +11,7 @@ For anyone who wants to keep their email address anonymous, Loft is a catch-all 
 This project is named after the construction that houses homing pigeons: a Loft. Each pigeonhole is essentially a separate mailbox.
 
 # Architecture
-![Architecture](https://raw.githubusercontent.com/BAPostma/Loft/master/doc/architecture.svg)
+![Architecture](doc/architecture.svg)
 **The following AWS services are used:** CloudFormation, SES, SNS, SQS, S3, CloudWatch, Dynamo DB, Lambda, SAR and IAM.
 
 ## Prerequisites
@@ -45,7 +45,7 @@ The project source includes function code and supporting resources:
 
 ## Prerequisites
 To develop on any platform, you'll need the following toolchain:
-- [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download/dotnet-core/3.1) (or higher)
-- [AWS extensions for .NET CLI](https://github.com/aws/aws-extensions-for-dotnet-cli)
-- [AWS CLI v1](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html).
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (or higher)
+- [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html).
 - [AWS Serverless Application Model (SAM) CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+- [AWS extensions for .NET CLI](https://github.com/aws/aws-extensions-for-dotnet-cli) (optional)
