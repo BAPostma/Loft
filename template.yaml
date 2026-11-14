@@ -269,7 +269,14 @@ Resources:
             Queue: !GetAtt CommandsQueue.Arn
       Environment:
         Variables:
+          LoftDomain: !Ref LoftDomain
           DynamoDbTableName: !Ref EmailTable
+          IMAPServer: !Ref IMAPServer
+          IMAPUsername: !Ref IMAPUsername
+          IMAPPassword: !Ref IMAPPassword
+          IMAPDestinationFolder: !Ref IMAPDestinationFolder
+          IMAPMarkAsRead: !Ref IMAPMarkAsRead
+          IMAPDebugLogging: !Ref IMAPDebugLogging
     DependsOn:
       - EmailHandlerExecutionRole
       - EmailTable
