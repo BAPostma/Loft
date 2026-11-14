@@ -22,7 +22,10 @@ namespace Loft.Function.Maintenance
         {
             // Using Document Interface because deserialisation fails (https://github.com/aws/aws-sdk-net/issues/1930)
             _dynamoClient = new AmazonDynamoDBClient();
-            _dynamoTable = Table.LoadTable(_dynamoClient, TableName);
+            _dynamoTable = new TableBuilder(_dynamoClient, TableName)
+                .AddHashKey("id", DynamoDBEntryType.String)
+                .AddRangeKey("timestamp", DynamoDBEntryType.String)
+                .Build();
             _s3client = new AmazonS3Client();
         }
 

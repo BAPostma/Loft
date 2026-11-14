@@ -8,7 +8,12 @@ using static Amazon.Lambda.SimpleEmailEvents.SimpleEmailEvent<Amazon.Lambda.Simp
 
 namespace Loft.Function.Models.DynamoDB
 {
-    [DynamoDBTable("loft", true)]
+    // LegacyCamelCase matches the casing of existing rows (camelCase root, PascalCase nested, verified by table scan);
+    // the SDK marks it obsolete for new tables, but switching to CamelCase/PascalCase would change the write format
+    // and orphan existing rows from the GSIs. Do not change without migrating data.
+#pragma warning disable CS0618
+    [DynamoDBTable("loft", CaseMode.LegacyCamelCase)]
+#pragma warning restore CS0618
     public class EmailMessage
     {
         [DynamoDBHashKey]
