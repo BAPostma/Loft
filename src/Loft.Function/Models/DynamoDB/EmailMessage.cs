@@ -19,7 +19,7 @@ namespace Loft.Function.Models.DynamoDB
         [DynamoDBHashKey]
         public string Id { get; set; }
         [DynamoDBRangeKey]
-        public DateTime? Timestamp { get; set; }
+        public DateTime Timestamp { get; set; }
 
         [DynamoDBGlobalSecondaryIndexHashKey]
         public string Source { get; set; }
@@ -46,7 +46,9 @@ namespace Loft.Function.Models.DynamoDB
                 throw new ArgumentNullException(nameof(message), "Mail data is missing from SES event");
 
             Id = message.Mail.MessageId;
-            Timestamp = message.Mail.Timestamp == DateTime.MinValue ? (DateTime?)null : message.Mail.Timestamp;
+            // A missing SES timestamp previously became a null range key, which DynamoDB rejects;
+            // fall back to the current time so the row can still be stored and sorts naturally.
+            Timestamp = message.Mail.Timestamp == DateTime.MinValue ? DateTime.UtcNow : message.Mail.Timestamp;
             Source = message.Mail.Source;
             SourceName = message.Mail.CommonHeaders?.From?.FirstOrDefault();
             Destination = message.Mail.Destination?.FirstOrDefault(d => d.Contains(domain, StringComparison.InvariantCultureIgnoreCase));
