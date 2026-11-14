@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.SimpleEmailEvents;
@@ -116,14 +117,25 @@ namespace Loft.Function.Maintenance
                 mime = await MimeMessage.LoadAsync(getObject.ResponseStream);
             }
 
+            var loftSuffix = $"@{Configuration.LoftDomain}";
             var destination = mime.To.Mailboxes
                 .Select(m => m.Address)
-                .Where(a => a.EndsWith($"@{Configuration.LoftDomain}", StringComparison.InvariantCultureIgnoreCase))
+                .Where(a => a.EndsWith(loftSuffix, StringComparison.InvariantCultureIgnoreCase))
                 .ToList();
+
             if (destination.Count == 0)
             {
-                // BCC-only or unparsable: without an envelope recipient the chain cannot
-                // route the message (see S3ArchiveHandler.GetDestinationMailbox).
+                // BCC-only mail: the recipient is not in the To: header, but the SES hop's
+                // Received: header records the envelope recipient (RCPT TO) in its "for" clause.
+                destination = ExtractEnvelopeRecipients(mime, loftSuffix);
+                if (destination.Count > 0)
+                {
+                    LambdaLogger.Log($"Resolved BCC-only recipient(s) {string.Join(", ", destination)} from Received: header(s)");
+                }
+            }
+
+            if (destination.Count == 0)
+            {
                 LambdaLogger.Log($"Skipping {messageObjectKey}: no recipient on the Loft domain found");
                 return null;
             }
@@ -168,6 +180,24 @@ namespace Loft.Function.Maintenance
             };
 
             return message;
+        }
+
+        /// <summary>
+        /// Extracts envelope recipients from the "for &lt;addr&gt;" clause of Received: headers.
+        /// The SES inbound hop stamps the RCPT TO address there, which is the only place
+        /// a BCC recipient survives outside the SMTP envelope. Received: headers are
+        /// prepended per hop, so iterating in file order takes the most recent (SES) hop first.
+        /// </summary>
+        private static List<string> ExtractEnvelopeRecipients(MimeMessage mime, string loftSuffix)
+        {
+            return mime.Headers
+                .Where(h => h.Id == HeaderId.Received)
+                .Select(h => Regex.Match(h.Value, @"\bfor\s+<?([a-z0-9._%+\-']+@[a-z0-9.\-]+)>?", RegexOptions.IgnoreCase))
+                .Where(m => m.Success)
+                .Select(m => m.Groups[1].Value)
+                .Where(a => a.EndsWith(loftSuffix, StringComparison.InvariantCultureIgnoreCase))
+                .Distinct(StringComparer.InvariantCultureIgnoreCase)
+                .ToList();
         }
     }
 }
