@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.SQSEvents;
+using Humanizer;
 using Loft.Function.Maintenance;
 
 namespace Loft.Function
@@ -17,17 +18,22 @@ namespace Loft.Function
             foreach (var record in sqsEvent.Records)
             {
                 if(string.IsNullOrWhiteSpace(record.Body)) continue;
-                
-                LambdaLogger.Log($"Control function called with command {record.Body}");
 
-                switch (record.Body)
+                var command = ControlCommand.ParseFrom(record.Body);
+                LambdaLogger.Log($"Control function called with command {command.Name} (parameters: {command.Parameters.Humanize()})");
+
+                switch (command.Name)
                 {
                     case "receipient-case-normalisation":
                         await ReceipientCaseNormalisation.NormaliseReceipientCase();
                         break;
 
+                    case "reprocess-inbox":
+                        await InboxReprocessor.Reprocess(command["bucket"]);
+                        break;
+
                     default:
-                        LambdaLogger.Log($"Control command {record.Body} not understood, cancelling execution");
+                        LambdaLogger.Log($"Control command {command.Name} not understood, cancelling execution");
                         break;
                 }
             }
